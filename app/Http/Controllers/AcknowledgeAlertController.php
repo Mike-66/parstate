@@ -24,7 +24,7 @@ class AcknowledgeAlertController extends Controller
         $Info1='die Aufgabe für '.$alert->user_id;
 
         $infoarray=array($caption);
-        array_push($infoarray, $todo);
+        //array_push($infoarray, $todo);
 
         return view('acknowledgealert',  compact('infoarray'));
     }

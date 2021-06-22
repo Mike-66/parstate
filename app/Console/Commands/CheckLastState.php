@@ -55,6 +55,8 @@ class CheckLastState extends Command
             $alert = new Alert();
             $alert->user_id=$missing_user->id;
             $alert->save();
+            $missing_user->alert_id=$alert->id;
+            $missing_user->save();
         }
 
         return 0;

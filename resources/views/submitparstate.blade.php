@@ -33,7 +33,7 @@
                                 </div>
                             @endif
 
-                                <form action="/parstate/submit" method="post">
+                                <form action="{{ url($infoarray[3]) }}" method="post">
                                     @csrf
                                     <div class="form-group">
                                         @foreach ($parstatedefines as $key => $value)

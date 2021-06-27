@@ -14,8 +14,8 @@ use App\Http\Controllers\AcknowledgeAlertController;
 | contains the "web" middleware group. Now create something great!
 |
 */
-Route::get('parstate/submit',[App\Http\Controllers\ParstatesController::class,'create'] );
-Route::post('parstate/submit',[App\Http\Controllers\ParstatesController::class,'store'] );
-Route::get('/acknowledgealert/{alert:uuid}', [AcknowledgeAlertController::class, 'acknowledge']);
+Route::get('parstate/parstate',[App\Http\Controllers\ParstatesController::class,'create'] )->name('parstateget');
+Route::post('parstate/parstate',[App\Http\Controllers\ParstatesController::class,'store'] )->name('parstatepost');
+Route::get('/acknowledgealert/{alert:uuid}', [AcknowledgeAlertController::class, 'acknowledge'])->name('acknowledge');
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 

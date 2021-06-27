@@ -14,10 +14,6 @@
 
 <p>{{ $details['message'] }}</p>
 
-<p>{{ $details['ackowledge'] }}  </p>
-
-<a href="{{ url($details['ackowledge_url']) }}">Übernehmen</a>
-
 <h3>{{ $details['greetings'] }}</h3>
 
 </body>

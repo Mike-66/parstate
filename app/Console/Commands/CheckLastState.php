@@ -45,7 +45,7 @@ class CheckLastState extends Command
     {
         Log::debug('check:laststate fired');
 
-        $condition='TIMESTAMPDIFF(SECOND, updated_at, NOW()) > 50';
+        $condition='TIMESTAMPDIFF(SECOND, updated_at, NOW()) > 30';
         $condition=$condition.' AND parstate_id IS NOT NULL';
         $condition=$condition.' AND alert_id IS NULL';
         $missing_users=User::whereRaw( $condition )->get();

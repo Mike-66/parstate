@@ -7,8 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use App\Models\Parstate;
 use App\Models\User;
+use App\Models\Alert;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ParstatesController extends Controller
 {
@@ -29,11 +31,12 @@ class ParstatesController extends Controller
             $laststate=$user->parstate_id;
         }
 
-        $todo="Wie ist die Lage ?";
+        $question="Wie ist die Lage ?";
 
         $infoarray=array($caption);
-        array_push($infoarray, $todo);
+        array_push($infoarray, $question);
         array_push($infoarray, $laststate);
+        array_push($infoarray, route('parstatepost'));
 
         try {
             $parstatedefines = ParstateDefine::orderBy('id','asc')->pluck('description', 'id');
@@ -57,12 +60,18 @@ class ParstatesController extends Controller
         $parstate = tap($parstate)->save();
 
         $user=User::find($request->user()->id);
+        if( $user->alert_id > 0 ){
+            $alert=Alert::find($user->alert_id);
+            $alert->HandleByUser($user->id);
+            $user->alert_id=null;
+            Log::debug('missing user '.$user->name.' is back');
+        }
         $user->parstate_id=$parstate->parstate_id;
-        $user->save();
+        $user->touch();
 
         //once dashboard is more populated, redirect to home could make sense
         //return redirect('/home');
         //since submit parstate is the only task, we will stay here
-        return redirect('/parstate/submit');
+        return redirect(route('parstateget'));
     }
 }

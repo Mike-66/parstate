@@ -10,7 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use App\Mail\ParstateAlarm;
+use App\Mail\ParstateMail;
 use Mail;
 
 class SendEmail implements ShouldQueue
@@ -27,6 +27,7 @@ class SendEmail implements ShouldQueue
     public function __construct($details)
     {
         Log::debug('__construct');
+        $this->queue='emails';
         $this->details = $details;
     }
 
@@ -37,8 +38,8 @@ class SendEmail implements ShouldQueue
      */
     public function handle()
     {
-        Log::debug('handle '.$this->details['message']);
-        $email = new ParstateAlarm($this->details);
-        Mail::to($this->details['watcher'])->send($email);
+        Log::debug('SendEmail::handle type: '.$this->details['type'].', message: '.$this->details['message']);
+        $email = new ParstateMail($this->details);
+        Mail::to($this->details['to_address'])->send($email);
     }
 }

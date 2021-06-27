@@ -21,6 +21,9 @@
         @endif
 
             <h1>{{ $infoarray[0] }}</h1>
+            <h3>{{ $infoarray[1] }}</h3>
+            <h3>{{ $infoarray[2] }}</h3>
+            <h2>{{ $infoarray[3] }}</h2>
 
     </div>
 

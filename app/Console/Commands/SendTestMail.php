@@ -47,7 +47,7 @@ class SendTestMail extends Command
 
         ];
 
-        \Mail::to('banane@zitorn.de')->send(new \App\Mail\ParstateAlarm($details));
+        \Mail::to('banane@zitorn.de')->send(new \App\Mail\ParstateMail($details));
 
         return 0;
     }

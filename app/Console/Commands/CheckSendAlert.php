@@ -60,7 +60,7 @@ class CheckSendAlert extends Command
         //           })
         //           ->get();
 
-        //the pure eloquent attempt
+        //the eloquent/raw mixed attempt
         $alerts=Alert::whereNull("handled")
             ->where(function($q) {
                 $condition='alerts.updated_at = alerts.created_at';

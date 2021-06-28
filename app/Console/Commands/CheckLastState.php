@@ -3,10 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Models\Alert;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Console\Command;
-use App\Models\Parstate;
 use App\Models\User;
 
 
@@ -44,6 +42,8 @@ class CheckLastState extends Command
     public function handle()
     {
         Log::debug('check:laststate fired');
+
+        //select now(), CONVERT_TZ( now() , 'UTC', 'Europe/Berlin' );
 
         $condition='TIMESTAMPDIFF(SECOND, updated_at, NOW()) > 30';
         $condition=$condition.' AND parstate_id IS NOT NULL';

@@ -48,4 +48,8 @@ class User extends Authenticatable
     public function userwatchers() {
         return $this->hasMany(UserWatcher::class);
     }
+
+    public function checktype() {
+        return $this->hasOne(CheckType::class);
+    }
 }

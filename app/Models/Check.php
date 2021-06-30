@@ -14,4 +14,8 @@ class Check extends Model
         'hour',
         'minute'
     ];
+
+    public function checktype() {
+        return $this->belongsTo(CheckType::class);
+    }
 }

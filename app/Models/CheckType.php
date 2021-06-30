@@ -17,7 +17,11 @@ class CheckType extends Model
         return $this->hasMany(Check::class);
     }
 
-    public function user() {
-        return $this->belongsTo(User::class);
+    public function users() {
+        return $this->hasMany(User::class);
+    }
+
+    public function missing_users( $parstate_id ) {
+        return $this->users->where('parstate_id','=',$parstate_id);
     }
 }

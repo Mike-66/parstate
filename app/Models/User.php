@@ -50,6 +50,6 @@ class User extends Authenticatable
     }
 
     public function checktype() {
-        return $this->hasOne(CheckType::class);
+        return $this->belongsTo(CheckType::class);
     }
 }

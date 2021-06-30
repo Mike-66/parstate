@@ -45,38 +45,15 @@ class CheckTest extends Command
     {
         printf("%s\n","test:check called");
 
-        /*
-        $users=User::where('id',4)->get();
-
-        foreach ($users as $user) {
-            foreach ($user->checktype->checks as $check) {
-                printf("%s,%s,%s\n",$user->name,$user->checktype->name,$user->checktype->check->hour);
+        $checktype=CheckType::find(1);
+        printf("%s,%s\n",'CheckType',$checktype->name);
+        foreach ($checktype->checks as $check)
+        {
+             printf("%s%s\n", "check at ", $check->hour);
+             foreach ($checktype->missing_users(1) as $user) {
+                 printf("%s,%s\n",'checking user ',$user->name);
             }
         }
-        */
-
-        $checktypes=CheckType::where('id',1)->get();
-        foreach ($checktypes as $checktype) {
-            printf("%s%s\n", "name:", $checktype->name);
-            foreach ($checktype->checks as $check) {
-                printf("%s%s\n", "name:", $check->hour);
-            }
-        }
-
-
-        $checks=CheckType::find(1)->checks;
-        foreach ($checks as $check) {
-            printf("%s%s\n", "name:", $check->hour);
-        }
-
-
-
-        //foreach ($checktypes as $checktype) {
-        //    printf("%s%s\n","name:",$checktype->name);
-        //}
-
-
-
 
         return 0;
     }

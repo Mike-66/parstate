@@ -56,7 +56,7 @@ class CheckSendAlert extends Command
         //                $q->Where('alerts.updated_at' = 'alerts.created_at') //after creation
         //                ->orWhere('updated_at', '<', \Carbon\Carbon::now() //at any subsequent run
         //                        //->subSeconds(env('USER_MISSING_ALARM_REPEAT_DELAY', 1800))->toDateTimeString());
-        //                ->subSeconds(env('USER_MISSING_ALARM_REPEAT_DELAY', 10))->toDateTimeString());
+        //                ->subSeconds(config('parstate.user_missing_alarm_repeat_delay'))->toDateTimeString());
         //           })
         //           ->get();
 

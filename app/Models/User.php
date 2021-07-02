@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+//TODO add last_check_at for check schdule
+//TODO add last_parstate_at instead of updated_at
+
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
@@ -44,6 +47,10 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function parstate() {
+        return $this->belongsTo(Parstate::class);
+    }
 
     public function userwatchers() {
         return $this->hasMany(UserWatcher::class);

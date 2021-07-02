@@ -45,6 +45,7 @@ class CheckTest extends Command
     {
         printf("%s\n","test:check called");
 
+        /*
         $checktype=CheckType::find(1);
         printf("%s,%s\n",'CheckType',$checktype->name);
         foreach ($checktype->checks as $check)
@@ -54,6 +55,17 @@ class CheckTest extends Command
                  printf("%s,%s\n",'checking user ',$user->name);
             }
         }
+        */
+
+        //parstate() im user hat ermöglicht, dass in wherehas 'parstate' verwendet werden kann
+        //Voraussetz: parstate_id aus user ist der pkey aus der parstates tabelle (nicht wie bisher das befinden des users)
+        //parstate_id muss dann entsprechend zumindeest in Parstatecontroller.php (emails ?) verwaltet werden
+
+        CheckType::find(1)->missing_users()
+            ->each(function(User $missing_user){
+                printf("%s,%s\n",'missing_user',$missing_user->name);
+            } )
+        ;
 
         return 0;
     }

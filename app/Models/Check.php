@@ -12,7 +12,8 @@ class Check extends Model
     public $fillable = [
         'check_type_id',
         'hour',
-        'minute'
+        'minute',
+        'interval'
     ];
 
     public function checktype() {

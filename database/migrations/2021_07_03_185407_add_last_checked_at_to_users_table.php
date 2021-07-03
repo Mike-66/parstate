@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddCheckTypeIdToUsersTable extends Migration
+class AddLastCheckedAtToUsersTable extends Migration
 {
     /**
      * Run the migrations.
@@ -14,7 +14,7 @@ class AddCheckTypeIdToUsersTable extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->timestamp('check_type_id')->nullable()->after('remember_token') ;
+            $table->dateTime('last_checked_at')->nullable()->after('alert_id') ;
         });
     }
 
@@ -26,7 +26,7 @@ class AddCheckTypeIdToUsersTable extends Migration
     public function down()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('check_type_id');
+            $table->dropColumn('last_checked_at');
         });
     }
 }

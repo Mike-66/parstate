@@ -26,6 +26,7 @@ class User extends Authenticatable
         'password',
         'parstate_id',
         'alert_id',
+        'last_checked_at',
         'updated_at',
     ];
 

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddCheckTypeIdToUsersTable extends Migration
+class AddIntervalToChecksTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class AddCheckTypeIdToUsersTable extends Migration
      */
     public function up()
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->timestamp('check_type_id')->nullable()->after('remember_token') ;
+        Schema::table('checks', function (Blueprint $table) {
+            $table->integer('interval')->nullable()->after('minute') ;
         });
     }
 
@@ -25,8 +25,8 @@ class AddCheckTypeIdToUsersTable extends Migration
      */
     public function down()
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('check_type_id');
+        Schema::table('checks', function (Blueprint $table) {
+            $table->dropColumn('interval');
         });
     }
 }

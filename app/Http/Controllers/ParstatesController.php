@@ -16,6 +16,8 @@ class ParstatesController extends Controller
 {
     public function create(Request $request)
     {
+        DB::update('SET time_zone = ?', [$request->user()->timezone]);
+
         //QueryLog
         DB::connection()->enableQueryLog();
 

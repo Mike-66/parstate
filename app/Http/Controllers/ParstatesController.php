@@ -16,6 +16,9 @@ class ParstatesController extends Controller
 {
     public function create(Request $request)
     {
+        //QueryLog
+        DB::connection()->enableQueryLog();
+
         $greeting="Hallo";
 
         $user=User::find($request->user()->id);
@@ -27,8 +30,14 @@ class ParstatesController extends Controller
             $laststate=0;
         }
         else {
-            $caption=$caption."deine letzte Meldung war am " . $user->updated_at;
-            $laststate=$user->parstate_id;
+            $caption=$caption."deine letzte Meldung war am " . $user->parstate->created_at;
+            $laststate=$user->parstate->parstate_define_id;
+        }
+
+        //QueryLog
+        $queries = DB::getQueryLog();
+        foreach ($queries as $query) {
+            Log::debug($query);
         }
 
         $question="Wie ist die Lage ?";
@@ -52,7 +61,7 @@ class ParstatesController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-                        'parstate_id' => 'required|integer|between:1,6',
+                        'parstate_define_id' => 'required|integer|between:1,6',
         ]);
 
         $parstate=new Parstate($data);
@@ -66,7 +75,7 @@ class ParstatesController extends Controller
             $user->alert_id=null;
             Log::debug('missing user '.$user->name.' is back');
         }
-        $user->parstate_id=$parstate->parstate_id;
+        $user->parstate_id=$parstate->id;
         $user->touch();
 
         //once dashboard is more populated, redirect to home could make sense

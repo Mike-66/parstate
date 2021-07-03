@@ -37,7 +37,7 @@
                                     @csrf
                                     <div class="form-group">
                                         @foreach ($parstatedefines as $key => $value)
-                                            <input type="radio" id={{ $key }} name="parstate_id" value={{ $key }} <?php echo ($infoarray[2]==$key)?'checked':'' ?> />
+                                            <input type="radio" id={{ $key }} name="parstate_define_id" value={{ $key }} <?php echo ($infoarray[2]==$key)?'checked':'' ?> />
                                                 <label class="label" for={{ $value }}> {{ $value }} </label><br>
                                         @endforeach
                                         <h1> </h1>

@@ -40,9 +40,9 @@ class Alert extends Model
         Log::debug('Alert:: HandleByUser called for user_id '.$user_id);
         Log::debug('Alert:: HandleByUser missing user is '.$this->user_id);
 
-
-
         $user_user=User::find($user_id);
+
+        $userinfo=0;
 
         foreach ($this->user->userwatchers as $userwatcher) {
 
@@ -52,7 +52,6 @@ class Alert extends Model
 
                 //userback
                 Log::debug('preparing back info mail of ' . $this->user_id . ' for ' . $userwatcher->watcher_id);
-
                 $details = [
                     'type' => 'userback',    //will be examined in ParstateMail.php to set subject and redirect to corresponding blade
                     'to_address' => $watcher,
@@ -61,6 +60,19 @@ class Alert extends Model
                     'greetings' => 'Dein ' . env('APP_NAME', 'env app name missing') . ' Team',
                 ];
                 SendEmail::dispatch($details)->onQueue('emails');
+
+                if ($userinfo==0) {
+                    Log::debug('preparing back info mail of ' . $this->user_id . ' for himself');
+                    $details = [
+                        'type' => 'userselfback',    //will be examined in ParstateMail.php to set subject and redirect to corresponding blade
+                        'to_address' => $this->user,
+                        'title' => 'Hallo ' . $this->user->name,
+                        'message' => 'Du hast hat dich zurück gemeldet.',
+                        'greetings' => 'Dein ' . env('APP_NAME', 'env app name missing') . ' Team',
+                    ];
+                    $userinfo++;
+                    SendEmail::dispatch($details)->onQueue('emails');
+                }
 
             } else {
                 //handledalert
@@ -74,6 +86,18 @@ class Alert extends Model
                     'greetings' => 'Dein ' . env('APP_NAME', 'env app name missing') . ' Team',
                 ];
                 SendEmail::dispatch($details)->onQueue('emails');
+
+                if ($watcher->id==$user_id) {
+                    Log::debug('preparing info mail of ' . $user_id . ' for himself');
+                    $details = [
+                        'type' => 'userhandled',    //will be examined in ParstateMail.php to set subject and redirect to corresponding blade
+                        'to_address' => $this->user,
+                        'title' => 'Hallo ' . $this->user->name,
+                        'message' => $watcher->name.' kümmert sich um dich.',
+                        'greetings' => 'Dein ' . env('APP_NAME', 'env app name missing') . ' Team',
+                    ];
+                    SendEmail::dispatch($details)->onQueue('emails');
+                }
 
             }
         }

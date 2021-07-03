@@ -33,9 +33,10 @@ class CheckType extends Model
     }
     */
 
-    public function missing_users()
+    public function alertable_missing_users()
     {
-        return $this->users()  //missing_users
+        return $this->users()
+            ->whereNull('alert_id')  //missing_users
             ->whereHas('parstate',function($sql){
                 $sql->where('created_at','<',now()->subseconds(30));
             })

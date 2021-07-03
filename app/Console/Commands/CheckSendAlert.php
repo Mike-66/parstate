@@ -65,7 +65,7 @@ class CheckSendAlert extends Command
             ->where(function($q) {
                 $condition='alerts.updated_at = alerts.created_at';
                 $condition=$condition.' OR ';
-                $condition=$condition.'TIMESTAMPDIFF(SECOND, updated_at, NOW()) >'.env('USER_MISSING_ALARM_REPEAT_DELAY', 1800);
+                $condition=$condition.'TIMESTAMPDIFF(SECOND, updated_at, NOW()) >'.config('parstate.user_missing_alarm_repeat_delay');
                 $q->WhereRaw($condition);
             })
             ->get();
@@ -87,17 +87,28 @@ class CheckSendAlert extends Command
                     'type' => 'usermissing',    //will be examined in ParstateMail.php to set subject and redirect to corresponding blade
                     'to_address' => $watcher,
                     'title' => 'Hallo '.$watcher->name,
-                    'message' => $alert->user->name.' hat sich am '.$alert->user->updated_at.' letzmalig gemeldet.',
+                    'message' => $alert->user->name.' hat sich am '.$alert->user->parstate->created_at.' letzmalig gemeldet.',
                     'ackowledge' => ' Durch Klick auf den Link übernimmst du die Aufgabe:',
                     'ackowledge_url' => route('acknowledge',$alert->uuid),
                     'greetings' => 'Dein '.env('APP_NAME', 'env app name missing').' Team',
-                    //'ackowledge_url' => env('APP_URL', 'env app url missing').'/acknowledgealert/'.$alert->uuid,
                 ];
                 SendEmail::dispatch($details)->onQueue('emails');
             }
             if ($watchercount === 0){
                 Log::debug('no watcher found for '.$alert->user->id);
             }
+            else {
+                Log::debug('user id '.$alert->user->id.' info mail to user ');
+                $details = [
+                    'type' => 'useralertinfo', //will be examined in ParstateMail.php to set subject and redirect to corresponding blade
+                    'to_address' => $alert->user,
+                    'title' => 'Hallo '.$alert->user->name,
+                    'message' => 'Es wurden soeben '.$watchercount.' Meldungen an deine Beobachter versickt',
+                    'greetings' => 'Dein '.env('APP_NAME', 'env app name missing').' Team',
+                ];
+                SendEmail::dispatch($details)->onQueue('emails');
+            }
+
             $alert->touch();
         }
 

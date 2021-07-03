@@ -3,6 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Models\Alert;
+use App\Models\CheckType;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Console\Command;
 use App\Models\User;
@@ -45,19 +47,16 @@ class CheckLastState extends Command
 
         //select now(), CONVERT_TZ( now() , 'UTC', 'Europe/Berlin' );
 
-        $condition='TIMESTAMPDIFF(SECOND, updated_at, NOW()) > 30';
-        $condition=$condition.' AND parstate_id IS NOT NULL';
-        $condition=$condition.' AND alert_id IS NULL';
-        $missing_users=User::whereRaw( $condition )->get();
-
-        foreach ($missing_users as $missing_user) {
-            Log::debug('user id '.$missing_user->id.' is missed by '.env('APP_NAME', 'env app name missing'));
-            $alert = new Alert();
-            $alert->user_id=$missing_user->id;
-            $alert->save();
-            $missing_user->alert_id=$alert->id;
-            $missing_user->save();
-        }
+        CheckType::find(1)->alertable_missing_users()
+            ->each(function(User $missing_user){
+                Log::debug('user name/id '.$missing_user->name.'/'.$missing_user->id.' is missed by '.env('APP_NAME', 'env app name missing'));
+                $alert = new Alert();
+                $alert->user_id=$missing_user->id;
+                $alert->save();
+                $missing_user->alert_id=$alert->id;
+                $missing_user->save();
+            } )
+        ;
 
         return 0;
     }

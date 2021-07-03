@@ -48,15 +48,16 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    public function parstate() {
-        return $this->belongsTo(Parstate::class);
-    }
-
     public function userwatchers() {
         return $this->hasMany(UserWatcher::class);
+    }
+
+    public function parstate() {
+        return $this->belongsTo(Parstate::class);
     }
 
     public function checktype() {
         return $this->belongsTo(CheckType::class);
     }
+
 }

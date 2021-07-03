@@ -22,23 +22,26 @@ class AcknowledgeAlertController extends Controller
         $caption=$greeting." ".$user->name.", ";
 
         $missing_user=User::find($alert->user_id);
-        $Info1='Du hast die Aufgabe, dich um '.$missing_user->name.' zu kümmern übernommen.';
-        $Info2='Vielen Dank';
-        $Info3='Dein '.env('APP_NAME', 'env app name missing')." Team";
 
-        if ($alert->handled === 1) {
+        if ($alert->handled_by > 1) {
             if( $alert->handled_by === $request->user()->id ) {
-                $Info1='Du hast ';
+                $Info1='Du hast die Aufgabe bereits am '.$alert->updated_at.' übernommen.';
+            }
+            else if ($alert->handled_by === $missing_user->id) {
+                $Info1=$missing_user->name.' hat sich am '.$alert->updated_at.' bereits zurückgemeldet.' ;
             }
             else {
                 $handled_user=User::find($alert->handled_by);
-                $Info1=$handled_user->name.' hat ';
+                $Info1=$handled_user->name.' hat die Aufgabe bereits am '.$alert->updated_at.' übernommen.';
             }
-            $Info1=$Info1.' die Aufgabe bereits am '.$alert->updated_at.' übernommen.' ;
         }
         else {
             $alert->HandleByUser($request->user()->id);
+            $Info1='Du hast die Aufgabe, dich um '.$missing_user->name.' zu kümmern übernommen.';
         }
+
+        $Info2='Vielen Dank';
+        $Info3='Dein '.env('APP_NAME', 'env app name missing')." Team";
 
         $infoarray=array($caption);
         array_push($infoarray, $Info1);

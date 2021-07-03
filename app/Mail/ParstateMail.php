@@ -46,12 +46,17 @@ class ParstateMail extends Mailable implements ShouldQueue
                     ->view('emails.default');
             }
             case 'useralertinfo':{
-                return $this->subject(env('APP_NAME', 'env app name missing').' Alarm Meldungen versichickt')
+                return $this->subject(env('APP_NAME', 'env app name missing').' Vermisst Meldungen verschickt')
                     ->view('emails.default');
             }
-
-
-
+            case 'userselfback':{
+                return $this->subject(' Schön, dass du wieder da bist !')
+                    ->view('emails.default');
+            }
+            case 'userhandled':{
+                return $this->subject(' Es wird sich um dich gekümmert !')
+                    ->view('emails.default');
+            }
             default:{
                 Log::debug('ParstateMail::build unknown type');
             }

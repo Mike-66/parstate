@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\User;
 use App\Models\CheckType;
 use App\Models\Check;
+use App\Models\Alert;
 
 
 class CheckTest extends Command
@@ -45,27 +46,16 @@ class CheckTest extends Command
     {
         printf("%s\n","test:check called");
 
-        /*
-        $checktype=CheckType::find(1);
-        printf("%s,%s\n",'CheckType',$checktype->name);
-        foreach ($checktype->checks as $check)
-        {
-             printf("%s%s\n", "check at ", $check->hour);
-             foreach ($checktype->missing_users(1) as $user) {
-                 printf("%s,%s\n",'checking user ',$user->name);
-            }
+        $alert=Alert::find(3);
+        Log::debug('test:check alert->handled='.$alert->handled_by);
+        if( $alert->handled_by > 0  ) {
+            Log::debug('test:check alert->handled_by='.$alert->handled_by);
         }
-        */
+        else {
+            Log::debug('test:check alert->handled_by is NULL');
+        }
 
-        //parstate() im user hat ermöglicht, dass in wherehas 'parstate' verwendet werden kann
-        //Voraussetz: parstate_id aus user ist der pkey aus der parstates tabelle (nicht wie bisher das befinden des users)
-        //parstate_id muss dann entsprechend zumindeest in Parstatecontroller.php (emails ?) verwaltet werden
 
-        CheckType::find(1)->missing_users()
-            ->each(function(User $missing_user){
-                printf("%s,%s\n",'missing_user',$missing_user->name);
-            } )
-        ;
 
         return 0;
     }

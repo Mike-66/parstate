@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Carbon;
 
 use App\Models\User;
 use App\Models\CheckType;
@@ -46,6 +47,7 @@ class CheckTest extends Command
     {
         printf("%s\n","test:check called");
 
+        /*
         $alert=Alert::find(3);
         Log::debug('test:check alert->handled='.$alert->handled_by);
         if( $alert->handled_by > 0  ) {
@@ -54,8 +56,13 @@ class CheckTest extends Command
         else {
             Log::debug('test:check alert->handled_by is NULL');
         }
+        */
 
+        $startDate = Carbon::parse('2021-07-13 16:00:00', 'Europe/Berlin')->setTimezone('UTC');
+        $endDate = Carbon::parse('2021-07-13 20:00:00', 'Europe/Berlin')->setTimezone('UTC');
 
+        Log::debug('test:check startDate='.$startDate);
+        Log::debug('test:check endDate='.$endDate);
 
         return 0;
     }

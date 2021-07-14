@@ -14,7 +14,7 @@ class AddIntervalToChecksTable extends Migration
     public function up()
     {
         Schema::table('checks', function (Blueprint $table) {
-            $table->integer('interval')->nullable()->after('minute') ;
+            $table->integer('interval')->nullable()->default(14400)->after('minute') ;
         });
     }
 

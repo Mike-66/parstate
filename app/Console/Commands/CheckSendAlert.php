@@ -48,7 +48,7 @@ class CheckSendAlert extends Command
 
         Log::debug('checksendalert fired');
         //$alerts=Alert::whereNull("handled")
-        //            ->where('updated_at', '<', \Carbon\Carbon::now()->subSeconds(env('USER_MISSING_ALARM_REPEAT_DELAY', 1800))->toDateTimeString())
+        //            ->where('updated_at', '<', \Carbon\Carbon::now()->subSeconds(config('parstate.user_missing_alarm_repeat_delay'))->toDateTimeString())
 
         //the pure eloquent attempt
         //$alerts=Alert::whereNull("handled")

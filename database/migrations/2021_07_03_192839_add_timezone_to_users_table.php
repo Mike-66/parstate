@@ -14,7 +14,7 @@ class AddTimezoneToUsersTable extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('timezone')->nullable()->default('UTC')->after('remember_token');;
+            $table->string('timezone')->nullable()->default('Europe/Berlin')->after('remember_token');;
         });
     }
 

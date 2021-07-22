@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class CheckType extends Model
 {
@@ -12,6 +13,9 @@ class CheckType extends Model
     public $fillable = [
         'name',
     ];
+    /*
+     * @var mixed
+     */
 
     public function checks() {
         return $this->hasMany(Check::class);
@@ -35,6 +39,8 @@ class CheckType extends Model
 
     public function alertable_missing_users()
     {
+        Log::debug('in CheckTpye::alertable_missing_users');
+
         return $this->users()
             ->whereNull('alert_id')  //missing_users
             ->whereHas('parstate',function($sql){

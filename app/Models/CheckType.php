@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 
 class CheckType extends Model
@@ -19,6 +20,10 @@ class CheckType extends Model
 
     public function checks() {
         return $this->hasMany(Check::class);
+    }
+
+    public function checktypetimezones() {
+        return $this->hasMany(CheckTypeTimezone::class);
     }
 
     public function users() {
@@ -37,17 +42,17 @@ class CheckType extends Model
     }
     */
 
-    public function alertable_missing_users()
+    public function alertable_missing_users(  $checktime_utc_min )
     {
-        Log::debug('in CheckTpye::alertable_missing_users');
+        Log::Info('in CheckType::alertable_missing_users' );
+        Log::Info('scanning for users last state before '.$checktime_utc_min->toDateTimeString());
 
         return $this->users()
             ->whereNull('alert_id')  //missing_users
-            ->whereHas('parstate',function($sql){
-                $sql->where('created_at','<',now()->subseconds(30));
+            ->whereHas('parstate',function($sql) use ($checktime_utc_min)  {
+                $sql->where('created_at','<', $checktime_utc_min );
             })
             ->get();
-
     }
 
 

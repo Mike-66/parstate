@@ -43,10 +43,13 @@ class CheckSendAlert extends Command
      */
     public function handle()
     {
-        //QueryLog
-        DB::connection()->enableQueryLog();
+        Log::debug('checksendalert fired, user_missing_alarm_repeat_delay = '.config('parstate.user_missing_alarm_repeat_delay'));
 
-        Log::debug('checksendalert fired');
+        //QueryLog
+        if ( config('parstate.sql_debug')  == 'ON' ) {
+            DB::connection()->enableQueryLog();
+        }
+
         //$alerts=Alert::whereNull("handled")
         //            ->where('updated_at', '<', \Carbon\Carbon::now()->subSeconds(config('parstate.user_missing_alarm_repeat_delay'))->toDateTimeString())
 
@@ -69,11 +72,6 @@ class CheckSendAlert extends Command
                 $q->WhereRaw($condition);
             })
             ->get();
-
-        //QueryLog
-        $queries = DB::getQueryLog();
-        $last_query = end($queries);
-        Log::debug($last_query);
 
         foreach ($alerts as $alert) {
             //eloquent alert loads user
@@ -110,6 +108,13 @@ class CheckSendAlert extends Command
             }
 
             $alert->touch();
+        }
+
+        //QueryLog
+        if ( config('parstate.sql_debug')  == 'ON' ) {
+            $queries = DB::getQueryLog();
+            $last_query = end($queries);
+            Log::debug($last_query);
         }
 
         return 0;

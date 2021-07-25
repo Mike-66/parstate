@@ -57,6 +57,10 @@ class ParstateMail extends Mailable implements ShouldQueue
                 return $this->subject(' Es wird sich um dich gekümmert !')
                     ->view('emails.default');
             }
+            case 'test':{
+                return $this->subject(' Testmail ')
+                    ->view('emails.default');
+            }
             default:{
                 Log::debug('ParstateMail::build unknown type');
             }

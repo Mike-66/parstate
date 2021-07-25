@@ -9,6 +9,7 @@ use Illuminate\Support\Carbon;
 
 use App\Models\User;
 use App\Models\CheckType;
+use App\Models\CheckTypeTimezone;
 use App\Models\Check;
 use App\Models\Alert;
 
@@ -46,43 +47,65 @@ class CheckTest extends Command
      */
     public function handle()
     {
-        printf("%s\n","test:check called");
-
         //QueryLog
         //DB::connection()->enableQueryLog();
 
-        $user=User::find(1);
-        Log::debug('user name'.$user->name.' timezone '.$user->timezone);
+        $now=Carbon::now();
+        $now_format=$now->toDateTimeString();    // now seems to be something like a reference. I need a String
+                                                 // to create other instances of the same time
 
-        $actualtime_user = Carbon::now()->setTimezone($user->timezone);
-        $actualtime_user_format=$actualtime_user->format('Y-m-d H:i:s');
-        Log::debug("actualtime in users timezone is is ".$actualtime_user_format);
-
-        $actualtime_user_day=$actualtime_user->format('Y-m-d');
-        Log::debug("actualtime_user_day in users timezone is is ".$actualtime_user_day);
+        Log::debug('invoked : ' . $now_format.'-----------------------------------------------');
 
         $checktype=CheckType::find(1);
-        Log::debug('in CheckTest checktype,name=' . $checktype->name);
-        foreach ($checktype->checks as $check ) {
+        foreach ($checktype->checktypetimezones as $checktypetimezone ) {
+            Log::debug('checktypetimezone : ' . $checktypetimezone->timezone);
 
-            Log::debug('in CheckTest check.hour=' . $check->hour);
-            Log::debug('in CheckTest check.minute=' . $check->minute);
-            $shour=$check->hour;
-            if( $check->hour < 1 ) $shour='00'; else if( $check->hour < 10 ) $shour='0'.$shour;
-            $smin=$check->minute;
-            if( $check->minute < 1 ) $smin='00'; else if ( $check->minute < 10 ) $smin='0'.$smin;
-            $checktime_user=$actualtime_user_day.' '.$shour.':'.$smin.':00';
-            Log::debug('in CheckTest check in users timezone should start @ earliest '.$checktime_user);
+            $now_user = Carbon::createFromFormat('Y-m-d H:i:s',$now_format);
+            $actualtime_user = $now_user->setTimezone($checktypetimezone->timezone);  //carbon object, cannot be string manipulated.
+            $actualtime_user_format = $actualtime_user->format('Y-m-d H:i:s'); //string
+            Log::debug("actualtime in users timezone is is " . $actualtime_user_format);
 
-            $checktime_utc = Carbon::createFromFormat('Y-m-d H:i:s', $checktime_user,$user->timezone)->setTimezone('UTC');
-            $checktime_utc_string=$checktime_utc->toDateTimeString();
-            Log::debug('in CheckTest will be stored in lastcheck and can directly compared');
-            Log::debug('with user.last_check. checktime_utc is  '.$checktime_utc_string);
+            $actualtime_user_day = $actualtime_user->format('Y-m-d');
+            Log::debug("actualtime_user_day in users timezone is is " . $actualtime_user_day);
 
-            $checktime_utc_min = $checktime_utc->subSeconds($check->interval);
-            Log::debug('this means in utc on server, the user should have');
-            Log::debug('messaged last after '.$checktime_utc_min);
+            foreach ($checktype->checks as $check) {
 
+                //build time string in users timezone that represents the check time
+                $shour = $check->hour;
+                if ($check->hour < 1) $shour = '00'; else if ($check->hour < 10) $shour = '0' . $shour;
+                $smin = $check->minute;
+                if ($check->minute < 1) $smin = '00'; else if ($check->minute < 10) $smin = '0' . $smin;
+                Log::debug('in CheckTest check coordinates ' . $shour . ':' . $smin);
+                $checktime_user = $actualtime_user_day . ' ' . $shour . ':' . $smin . ':00';
+                Log::debug('in CheckTest check should start@earliest ' . $checktime_user . ' ' .$checktypetimezone->timezone);
+
+                //calculate the UTC representation
+                $checktime_utc = Carbon::createFromFormat('Y-m-d H:i:s', $checktime_user, $checktypetimezone->timezone)->setTimezone('UTC');
+                $checktime_utc_string = $checktime_utc->toDateTimeString();
+                Log::debug('in CheckTest checktime_utc is  ' . $checktime_utc_string);
+
+                //subtract the interval, to have time point, after which the user had to send his keepalive
+                $checktime_utc_min = Carbon::createFromFormat('Y-m-d H:i:s',$checktime_utc);
+                $checktime_utc_min->subSeconds($check->interval);
+                Log::debug('in CheckTest checktime_utc_min '.$checktime_utc_min . ' UTC');
+
+                Log::debug('in CheckTest now           : '.$now);
+                Log::debug('in CheckTest last_trigger  : '.$checktypetimezone->last_trigger);
+                Log::debug('in CheckTest checktime_utc : '.$checktime_utc);
+
+                if ( $checktime_utc->greaterThan($checktypetimezone->last_trigger) &&
+                    $now->greaterThanOrEqualTo($checktime_utc) )  {
+
+                    Log::debug('Yeah, we are triggering');
+
+                    $checktypetimezone->last_trigger=$checktime_utc;
+                    $checktypetimezone->last_checked_at=Carbon::now()->toDateTimeString();
+                    $checktypetimezone->touch();
+
+                    break;
+                }
+
+            }
         }
 
         //QueryLog
@@ -90,24 +113,6 @@ class CheckTest extends Command
         //foreach ($queries as $query) {
         //    Log::debug($query);
         //}
-
-        /*
-        $alert=Alert::find(3);
-        Log::debug('test:check alert->handled='.$alert->handled_by);
-        if( $alert->handled_by > 0  ) {
-            Log::debug('test:check alert->handled_by='.$alert->handled_by);
-        }
-        else {
-            Log::debug('test:check alert->handled_by is NULL');
-        }
-        */
-
-        /*
-        $startDate = Carbon::parse('2021-07-13 16:00:00', 'Europe/Berlin')->setTimezone('UTC');
-        $endDate = Carbon::parse('2021-07-13 20:00:00', 'Europe/Berlin')->setTimezone('UTC');
-        Log::debug('test:check startDate='.$startDate);
-        Log::debug('test:check endDate='.$endDate);
-        */
 
         return 0;
     }

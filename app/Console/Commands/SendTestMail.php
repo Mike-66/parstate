@@ -2,9 +2,12 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\SendEmail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Console\Command;
+
+use App\Models\User;
 
 class SendTestMail extends Command
 {
@@ -13,7 +16,7 @@ class SendTestMail extends Command
      *
      * @var string
      */
-    protected $signature = 'mail:test';
+    protected $signature = 'mail:test {--email=}';
 
     /**
      * The console command description.
@@ -39,15 +42,24 @@ class SendTestMail extends Command
      */
     public function handle()
     {
+        try {
+            $email=$this->option('email');
+            $user=User::where('email','like',$email)->first();
+        }
+
+        catch (\Exception $e) {
+            printf("%s\n","'please provide valid email");
+            return;
+        }
+
         $details = [
-
-            'title' => 'Mail from '.env('APP_NAME', 'env app name missing'),
-
-            'body' => 'This is for testing email using smtp'
-
+            'type' => 'test', //will be examined in ParstateMail.php to set subject and redirect to corresponding blade
+            'to_address' => $user->email,
+            'title' => 'Hallo '.$user->name,
+            'message' => 'Das ist eine Test Mail',
+            'greetings' => 'Dein '.env('APP_NAME', 'env app name missing').' Team',
         ];
-
-        \Mail::to('banane@zitorn.de')->send(new \App\Mail\ParstateMail($details));
+        SendEmail::dispatch($details)->onQueue('emails');
 
         return 0;
     }

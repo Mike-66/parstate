@@ -23,6 +23,8 @@ class AcknowledgeAlertController extends Controller
 
         $missing_user=User::find($alert->user_id);
 
+        //All messages will be sent in the missing "watched" users timezone
+
         if ($alert->handled_by > 1) {
             if( $alert->handled_by === $request->user()->id ) {
                 $Info1='Du hast die Aufgabe bereits am '.$alert->updated_at.' übernommen.';

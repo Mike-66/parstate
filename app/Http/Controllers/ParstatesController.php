@@ -19,7 +19,9 @@ class ParstatesController extends Controller
         DB::update('SET time_zone = ?', [$request->user()->timezone]);
 
         //QueryLog
-        DB::connection()->enableQueryLog();
+        if ( config('parstate.sql_debug')  == 'ON' ) {
+            DB::connection()->enableQueryLog();
+        }
 
         $greeting="Hallo";
 
@@ -36,10 +38,11 @@ class ParstatesController extends Controller
             $laststate=$user->parstate->parstate_define_id;
         }
 
-        //QueryLog
-        $queries = DB::getQueryLog();
-        foreach ($queries as $query) {
-            Log::debug($query);
+        if ( config('parstate.sql_debug')  == 'ON' ) {
+            $queries = DB::getQueryLog();
+            foreach ($queries as $query) {
+                Log::Debug($query);
+            }
         }
 
         $question="Wie ist die Lage ?";

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Jobs\SendEmail;
+use App\Traits\CarbonHelperTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
@@ -11,6 +12,7 @@ use Illuminate\Support\Str;
 class Alert extends Model
 {
     use HasFactory;
+    use CarbonHelperTrait;
 
     protected  static  function  boot()
     {

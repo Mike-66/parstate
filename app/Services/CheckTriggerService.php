@@ -10,11 +10,11 @@ class CheckTriggerService {
 
     public    $now;
     protected $timezone;
-    protected $actualtime_user;
-    protected $actualtime_user_day;
-    public    $checktime_utc;
-    protected $checktime_user;
-    public    $checktime_utc_limit;
+    protected $now_tz;
+    protected $now_tz_day;
+    public    $checktime;
+    protected $checktime_tz;
+    public    $checktime_limit;
 
     public function __construct()
     {
@@ -32,13 +32,12 @@ class CheckTriggerService {
         Log::Info('CheckTriggerService::Prepare timezone : '.$timezone);
 
         $this->timezone=$timezone;
-        $now_user = $this->now->copy();
-        $this->actualtime_user = $now_user->setTimezone($this->timezone);  //carbon object, cannot be string manipulated.
-        Log::Info('CheckTriggerService::Prepare actualtime in tz is '.$this->actualtime_user);
+        $this->now_tz = $this->now->toImmutable()->setTimezone($this->timezone);  //carbon object, cannot be string manipulated.
+        Log::Info('CheckTriggerService::Prepare now in tz is '.$this->now_tz);
 
-        //o be used as a time base for Set
-        $this->actualtime_user_day = $this->actualtime_user->format(CarbonHelperService::$DAYFORMAT);
-        Log::Info('CheckTriggerService::Prepare actualtime_user_day in users timezone is is ' .$this->actualtime_user_day);
+        //to be used as a time base for Set
+        $this->now_tz_day = $this->now_tz->format(CarbonHelperService::$DAYFORMAT);
+        Log::Info('CheckTriggerService::Prepare now_user_day in users timezone is is ' .$this->now_tz_day);
 
     }
 
@@ -59,21 +58,21 @@ class CheckTriggerService {
         $smin = $minute;
         if ($minute < 1) $smin = '00'; else if ($minute < 10) $smin = '0' . $smin;
         Log::Info('CheckTriggerService::Set check coordinates '.$shour .':'.$smin);
-        $this->checktime_user = $this->actualtime_user_day.' '. $shour.':'.$smin .':00';
-        Log::Info('CheckTriggerService::Set check should start@earliest '.$this->checktime_user .' '.$this->timezone);
+        $this->checktime_tz = $this->now_tz_day.' '. $shour.':'.$smin .':00';
+        Log::Info('CheckTriggerService::Set check should start@earliest '.$this->checktime_tz .' '.$this->timezone);
 
         //calculate the UTC representation
-        $this->checktime_utc = Carbon::createFromFormat(CarbonHelperService::$TIMEFORMAT, $this->checktime_user, $this->timezone)->setTimezone('UTC');
-        Log::Info('CheckTriggerService::Set checktime_utc is  '.$this->checktime_utc);
+        $this->checktime = Carbon::createFromFormat(CarbonHelperService::$TIMEFORMAT, $this->checktime_tz, $this->timezone)->setTimezone('UTC');
+        Log::Info('CheckTriggerService::Set checktime_utc is  '.$this->checktime);
 
     }
 
     public function Limit( $interval ) {
 
         //subtract the interval, to have time point, after which the user had to send his keepalive
-        $this->checktime_utc_limit = Carbon::createFromFormat(CarbonHelperService::$TIMEFORMAT,$this->checktime_utc);
-        $this->checktime_utc_limit->subSeconds($interval);
-        Log::Info('CheckTriggerService::Limit checktime_utc_limit '.$this->checktime_utc_limit .' UTC');
+        $this->checktime_limit = Carbon::createFromFormat(CarbonHelperService::$TIMEFORMAT,$this->checktime);
+        $this->checktime_limit->subSeconds($interval);
+        Log::Info('CheckTriggerService::Limit checktime_limit '.$this->checktime_limit .' UTC');
 
     }
 
@@ -81,10 +80,10 @@ class CheckTriggerService {
 
         Log::Info('CheckTriggerService::Execute now           : '.$this->now);
         Log::Info('CheckTriggerService::Execute last_trigger  : '.$last_trigger);
-        Log::Info('CheckTriggerService::Execute checktime_utc : '.$this->checktime_utc);
+        Log::Info('CheckTriggerService::Execute checktime_utc : '.$this->checktime);
 
-        if ( $this->checktime_utc->greaterThan($last_trigger) &&
-            $this->now->greaterThanOrEqualTo($this->checktime_utc) ) {
+        if ( $this->checktime->greaterThan($last_trigger) &&
+            $this->now->greaterThanOrEqualTo($this->checktime) ) {
             return(true);
         }
 

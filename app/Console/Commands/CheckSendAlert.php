@@ -85,7 +85,7 @@ class CheckSendAlert extends Command
                     'type' => 'usermissing',    //will be examined in ParstateMail.php to set subject and redirect to corresponding blade
                     'to_address' => $watcher,
                     'title' => 'Hallo '.$watcher->name,
-                    'message' => $alert->user->name.' hat sich am '.$alert->user->parstate->created_at.' letzmalig gemeldet.',
+                    'message' => $alert->user->name.' hat sich am '.$alert->user->parstate->CreatedAtTZ($alert->user->timezone).' letzmalig gemeldet.',
                     'ackowledge' => ' Durch Klick auf den Link übernimmst du die Aufgabe:',
                     'ackowledge_url' => route('acknowledge',$alert->uuid),
                     'greetings' => 'Dein '.env('APP_NAME', 'env app name missing').' Team',

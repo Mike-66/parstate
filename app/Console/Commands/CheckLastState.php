@@ -67,12 +67,12 @@ class CheckLastState extends Command
         $checktype=CheckType::find(1);
         foreach ($checktype->checktypetimezones as $checktypetimezone ) {
             $checktriggerservice->Prepare($checktypetimezone->timezone);
-            foreach ($checktype->checks as $check) {
+            foreach ($checktype->checks()->orderBy('hour')->orderBy('minute')->get() as $check) {
                 $checktriggerservice->Set( $check->hour, $check->minute );
                 $checktriggerservice->Limit( $check->interval );
                 if ( $checktriggerservice->Execute($checktypetimezone->last_trigger) ) {
                     Log::Info('CheckLastState:: Yeah, we are triggering');
-                    CheckType::find(1)->alertable_missing_users( $checktriggerservice->checktime_utc_limit )
+                    CheckType::find(1)->alertable_missing_users( $checktriggerservice->checktime_limit )
                         ->each(function(User $missing_user){
                             Log::Info('CheckLastState:: user name/id '.$missing_user->name.'/'.$missing_user->id.' is missed by '.env('APP_NAME', 'env app name missing'));
                             $alert = new Alert();
@@ -83,7 +83,7 @@ class CheckLastState extends Command
                         } )
                     ;
                     //remark the check as done
-                    $checktypetimezone->last_trigger=$checktriggerservice->checktime_utc;
+                    $checktypetimezone->last_trigger=$checktriggerservice->checktime;
                     $checktypetimezone->last_checked_at=Carbon::now()->toDateTimeString();
                     $checktypetimezone->touch();
                     break;

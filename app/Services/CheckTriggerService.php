@@ -2,24 +2,39 @@
 
 namespace App\Services;
 
-use App\Services\CarbonHelperService;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 
 class CheckTriggerService {
 
-    public    $now;
-    protected $timezone;
-    protected $now_tz;
-    protected $now_tz_day;
-    public    $checktime;
-    protected $checktime_tz;
-    public    $checktime_limit;
+    private    $now;
+    private    $timezone;
+    /** @var Carbon */
+    private    $checktime;
+    private    $checktime_limit;
 
     public function __construct()
     {
-        $this->now=Carbon::now();
+        $this->now= CarbonImmutable::now();
     }
+
+    /**
+     * @return Carbon
+     */
+    public function getChecktime(): Carbon
+    {
+        return $this->checktime->copy();
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getChecktimeLimit()
+    {
+        return $this->checktime_limit->copy();
+    }
+
 
     /**
      * set class members depending on the users timezone needed for further processing
@@ -30,14 +45,7 @@ class CheckTriggerService {
     public function Prepare( $timezone ) {
 
         Log::Info('CheckTriggerService::Prepare timezone : '.$timezone);
-
         $this->timezone=$timezone;
-        $this->now_tz = $this->now->toImmutable()->setTimezone($this->timezone);  //carbon object, cannot be string manipulated.
-        Log::Info('CheckTriggerService::Prepare now in tz is '.$this->now_tz);
-
-        //to be used as a time base for Set
-        $this->now_tz_day = $this->now_tz->format(CarbonHelperService::$DAYFORMAT);
-        Log::Info('CheckTriggerService::Prepare now_user_day in users timezone is is ' .$this->now_tz_day);
 
     }
 
@@ -50,28 +58,19 @@ class CheckTriggerService {
      * @return void
      */
 
-    public function Set( $hour, $minute ) {
+    public function Set( $hour, $minute, $interval ) {
 
-        //build time string in users timezone that represents the check time
-        $shour = $hour;
-        if ($hour < 1) $shour = '00'; else if ($hour < 10) $shour = '0' . $shour;
-        $smin = $minute;
-        if ($minute < 1) $smin = '00'; else if ($minute < 10) $smin = '0' . $smin;
-        Log::Info('CheckTriggerService::Set check coordinates '.$shour .':'.$smin);
-        $this->checktime_tz = $this->now_tz_day.' '. $shour.':'.$smin .':00';
-        Log::Info('CheckTriggerService::Set check should start@earliest '.$this->checktime_tz .' '.$this->timezone);
+        $checktime_tz = Carbon::today($this->timezone)->setTime($hour,$minute)->toImmutable();
+        Log::Info(sprintf("CheckTriggerService::Set check should start@earliest %s %s",
+                    $checktime_tz->format(CarbonHelperService::$TIMEFORMAT),
+                    $checktime_tz->timezoneName));
 
         //calculate the UTC representation
-        $this->checktime = Carbon::createFromFormat(CarbonHelperService::$TIMEFORMAT, $this->checktime_tz, $this->timezone)->setTimezone('UTC');
+        $this->checktime = $checktime_tz->setTimezone('UTC')->toImmutable();
         Log::Info('CheckTriggerService::Set checktime_utc is  '.$this->checktime);
 
-    }
-
-    public function Limit( $interval ) {
-
         //subtract the interval, to have time point, after which the user had to send his keepalive
-        $this->checktime_limit = Carbon::createFromFormat(CarbonHelperService::$TIMEFORMAT,$this->checktime);
-        $this->checktime_limit->subSeconds($interval);
+        $this->checktime_limit = $this->checktime->subSeconds($interval);
         Log::Info('CheckTriggerService::Limit checktime_limit '.$this->checktime_limit .' UTC');
 
     }
@@ -83,10 +82,12 @@ class CheckTriggerService {
         Log::Info('CheckTriggerService::Execute checktime_utc : '.$this->checktime);
 
         if ( $this->checktime->greaterThan($last_trigger) &&
-            $this->now->greaterThanOrEqualTo($this->checktime) ) {
+            $this->checktime->lessThanOrEqualTo($this->now) ) {
             return(true);
         }
 
         return(false);
     }
+
+
 }

@@ -64,15 +64,17 @@ class CheckLastState extends Command
         //Basic idea is to have multiple check types in multiple timezones.
         // Here, just checktype.id 1 is handled
 
+        /** @var CheckType $checktype */
         $checktype=CheckType::find(1);
+        $checks=$checktype->checks()->orderBy('hour')->orderBy('minute')->get();
+
         foreach ($checktype->checktypetimezones as $checktypetimezone ) {
             $checktriggerservice->Prepare($checktypetimezone->timezone);
-            foreach ($checktype->checks()->orderBy('hour')->orderBy('minute')->get() as $check) {
-                $checktriggerservice->Set( $check->hour, $check->minute );
-                $checktriggerservice->Limit( $check->interval );
+            foreach ($checks as $check) {
+                $checktriggerservice->Set( $check->hour, $check->minute, $check->interval );
                 if ( $checktriggerservice->Execute($checktypetimezone->last_trigger) ) {
                     Log::Info('CheckLastState:: Yeah, we are triggering');
-                    CheckType::find(1)->alertable_missing_users( $checktriggerservice->checktime_limit )
+                    $checktype->alertable_missing_users( $checktriggerservice->getChecktimeLimit() )
                         ->each(function(User $missing_user){
                             Log::Info('CheckLastState:: user name/id '.$missing_user->name.'/'.$missing_user->id.' is missed by '.env('APP_NAME', 'env app name missing'));
                             $alert = new Alert();
@@ -83,9 +85,9 @@ class CheckLastState extends Command
                         } )
                     ;
                     //remark the check as done
-                    $checktypetimezone->last_trigger=$checktriggerservice->checktime;
+                    $checktypetimezone->last_trigger=$checktriggerservice->getChecktime();
                     $checktypetimezone->last_checked_at=Carbon::now()->toDateTimeString();
-                    $checktypetimezone->touch();
+                    $checktypetimezone->save();
                     break;
                 }
 

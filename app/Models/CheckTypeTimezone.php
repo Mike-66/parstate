@@ -13,13 +13,13 @@ class CheckTypeTimezone extends Model
         'id',
         'check_type_id',
         'timezone',
-        'last_trigger',
+        'last_checktime',
         'last_checked_at',
         'updated_at',
     ];
 
-    public function checktypes() {
-        return $this->belogsTo(CheckType::class);
+    public function checktype() {
+        return $this->belongsTo(CheckType::class);
     }
 
 }

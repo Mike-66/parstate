@@ -13,7 +13,8 @@ use App\Models\User;
 use App\Models\CheckTypeTimezone;
 use App\Models\Check;
 use App\Services\CheckTriggerService;
-
+use mysql_xdevapi\Exception;
+use Throwable;
 
 
 class CheckLastState extends Command
@@ -51,32 +52,32 @@ class CheckLastState extends Command
     {
         Log::Info('check:laststate fired, sql_debug = '.config('parstate.sql_debug'));
 
-        //select now(), CONVERT_TZ( now() , 'UTC', 'Europe/Berlin' );
+        $checktriggerservice = new CheckTriggerService();
 
         //QueryLog
-
         if ( config('parstate.sql_debug') == 'ON' ) {
             DB::connection()->enableQueryLog();
         }
 
-        $checktriggerservice = new CheckTriggerService();
-
+        $check_type_old=0;
         //Basic idea is to have multiple check types in multiple timezones.
-        // Here, just checktype.id 1 is handled
-
-        /** @var CheckType $checktype */
-        $checktype=CheckType::find(1);
-        $checks=$checktype->checks()->orderBy('hour')->orderBy('minute')->get();
-
-        foreach ($checktype->checktypetimezones as $checktypetimezone ) {
+        //this loopset manages check of checktype/timezone combinations as defined in table checktypetimezones
+        $checktypetimezones=CheckTypeTimezone::orderBy('check_type_id')->orderBy('timezone')->get();
+        foreach( $checktypetimezones as $checktypetimezone ) {
+            /** @var CheckType $checktype */
+            if($check_type_old!=$checktypetimezone->check_type_id) {
+                $checktype = CheckType::find($checktypetimezone->check_type_id); //TODO: bolongsTo in CheckTypeTimezone not working
+                $checks=$checktype->checks()->orderBy('hour')->orderBy('minute')->get();
+                $check_type_old=$checktypetimezone->check_type_id;
+            }
             $checktriggerservice->Prepare($checktypetimezone->timezone);
             foreach ($checks as $check) {
                 $checktriggerservice->Set( $check->hour, $check->minute, $check->interval );
-                if ( $checktriggerservice->Execute($checktypetimezone->last_trigger) ) {
-                    Log::Info('CheckLastState:: Yeah, we are triggering');
-                    $checktype->alertable_missing_users( $checktriggerservice->getChecktimeLimit() )
+                if ( $checktriggerservice->Execute($checktypetimezone->last_checktime) ) {
+                    Log::Info('CheckLastState:: Yeah, we are triggering for timezone '.$checktypetimezone->timezone);
+                    $checktype->alertable_missing_users( $checktypetimezone->timezone, $checktriggerservice->getChecktimeLimit() )
                         ->each(function(User $missing_user){
-                            Log::Info('CheckLastState:: user name/id '.$missing_user->name.'/'.$missing_user->id.' is missed by '.env('APP_NAME', 'env app name missing'));
+                            Log::Info('CheckLastState:: user name/id ' . $missing_user->name . '/' . $missing_user->id . ' is missed by ' . env('APP_NAME', 'env app name missing'));
                             $alert = new Alert();
                             $alert->user_id=$missing_user->id;
                             $alert->save();
@@ -85,12 +86,11 @@ class CheckLastState extends Command
                         } )
                     ;
                     //remark the check as done
-                    $checktypetimezone->last_trigger=$checktriggerservice->getChecktime();
+                    $checktypetimezone->last_checktime=$checktriggerservice->getChecktime();
                     $checktypetimezone->last_checked_at=Carbon::now()->toDateTimeString();
                     $checktypetimezone->save();
                     break;
                 }
-
             }
         }
 

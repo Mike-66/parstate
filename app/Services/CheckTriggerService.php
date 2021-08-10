@@ -22,7 +22,7 @@ class CheckTriggerService {
     /**
      * @return Carbon
      */
-    public function getChecktime(): Carbon
+    public function getChecktime()
     {
         return $this->checktime->copy();
     }
@@ -44,7 +44,7 @@ class CheckTriggerService {
 
     public function Prepare( $timezone ) {
 
-        Log::Info('CheckTriggerService::Prepare timezone : '.$timezone);
+        Log::Info('CheckTriggerService::Prepare 0.1 timezone : '.$timezone);
         $this->timezone=$timezone;
 
     }
@@ -75,13 +75,13 @@ class CheckTriggerService {
 
     }
 
-    public function Execute( $last_trigger ) {
+    public function Execute( $last_checktime ) {
 
         Log::Info('CheckTriggerService::Execute now           : '.$this->now);
-        Log::Info('CheckTriggerService::Execute last_trigger  : '.$last_trigger);
+        Log::Info('CheckTriggerService::Execute last_trigger  : '.$last_checktime);
         Log::Info('CheckTriggerService::Execute checktime_utc : '.$this->checktime);
 
-        if ( $this->checktime->greaterThan($last_trigger) &&
+        if ( $this->checktime->greaterThan($last_checktime) &&
             $this->checktime->lessThanOrEqualTo($this->now) ) {
             return(true);
         }

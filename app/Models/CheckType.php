@@ -42,13 +42,14 @@ class CheckType extends Model
     }
     */
 
-    public function alertable_missing_users(  $checktime_utc_limit )
+    public function alertable_missing_users(  $timezone , $checktime_utc_limit )
     {
         Log::Info('in CheckType::alertable_missing_users ' );
         Log::Info('scanning for users last state before '.$checktime_utc_limit->toDateTimeString());
 
         return $this->users()
             ->whereNull('alert_id')  //missing_users
+            ->where('timezone','=',$timezone)
             ->whereHas('parstate',function($sql) use ($checktime_utc_limit)  {
                 $sql->where('created_at','<', $checktime_utc_limit );
             })

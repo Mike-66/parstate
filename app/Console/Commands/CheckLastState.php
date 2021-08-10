@@ -75,7 +75,9 @@ class CheckLastState extends Command
                 $checktriggerservice->Set( $check->hour, $check->minute, $check->interval );
                 if ( $checktriggerservice->Execute($checktypetimezone->last_checktime) ) {
                     Log::Info('CheckLastState:: Yeah, we are triggering for timezone '.$checktypetimezone->timezone);
-                    $checktype->alertable_missing_users( $checktypetimezone->timezone, $checktriggerservice->getChecktimeLimit() )
+                    $checktype->alertable_missing_users($checktypetimezone->check_type_id,
+                                                        $checktypetimezone->timezone,
+                                                        $checktriggerservice->getChecktimeLimit())
                         ->each(function(User $missing_user){
                             Log::Info('CheckLastState:: user name/id ' . $missing_user->name . '/' . $missing_user->id . ' is missed by ' . env('APP_NAME', 'env app name missing'));
                             $alert = new Alert();
